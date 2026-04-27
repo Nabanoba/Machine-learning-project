@@ -1,0 +1,7 @@
+<h2>Construct Performance Dashboard</h2>
+
+<ul>
+{% for construct, count in data.items() %}
+    <li>{{ construct }} : {{ count }} questions</li>
+{% endfor %}
+</ul>

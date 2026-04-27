@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Dashboard</title>
+
+    <style>
+        * {
+            font-family: "Segoe UI", Arial;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f6f9;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        /* BACK BUTTON */
+        .top-bar {
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            background: #64748b;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background: #475569;
+        }
+
+        .btn {
+            background: #4f46e5;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #3730a3;
+        }
+
+        .top-actions {
+            margin-bottom: 15px;
+        }
+
+        .search-box {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-box input {
+            padding: 12px;
+            width: 350px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .search-box button {
+            padding: 12px;
+            border: none;
+            background: #06b6d4;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .search-box a {
+            padding: 12px;
+            background: #64748b;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #4f46e5;
+            color: white;
+            padding: 12px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f1f5f9;
+        }
+
+        select, button {
+            padding: 6px;
+        }
+
+        .assign-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .assign-btn:hover {
+            background: #15803d;
+        }
+
+        .empty {
+            margin-top: 30px;
+            color: #64748b;
+            text-align: center;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>Teacher Dashboard</h1>
+</div>
+
+<div class="container">
+
+
+    <div class="top-actions">
+    
+        <a href="/teacher/results" class="btn">View Results</a>
+        <a href="/logout" class="btn">Logout</a>
+        <a href="{{ url_for('cluster_visualization') }}" class="btn">
+            View Cluster Visualization
+        </a>
+        <!-- ADD THIS -->
+    <a href="{{ url_for('student_dashboard_stats') }}" class="btn">
+         View Student Performance Dashboard
+    </a>
+    </div>
+
+    <form class="search-box" method="GET" action="/teacher">
+
+        <input type="text"
+               name="search"
+               placeholder="Search by Construct (Numbers, Algebra...)"
+               value="{{ search or '' }}">
+
+        <button type="submit">Search</button>
+
+        <a href="/teacher" class="btn">Reset View</a>
+
+    </form>
+
+    {% if search %}
+
+        {% if questions %}
+
+            <h2>Results for "{{ search }}"</h2>
+
+            <table>
+                <tr>
+                    <th>Question</th>
+                    <th>Construct</th>
+                    <th>Assign</th>
+                </tr>
+
+                {% for row in questions %}
+                <tr>
+                    <td>{{ row.item }}</td>
+                    <td>{{ row.construct }}</td>
+
+                    <td>
+                        <form action="/assign/{{ row.item_id }}" method="get">
+
+                            <select name="student" required>
+                                <option value="">Select Student</option>
+
+                                {% for s in students %}
+                                    <option value="{{ s.username }}">{{ s.username }}</option>
+                                {% endfor %}
+
+                            </select>
+
+                            <button class="assign-btn">Assign</button>
+                        </form>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </table>
+
+        {% else %}
+            <p class="empty">No questions found for this construct.</p>
+        {% endif %}
+
+    {% else %}
+
+        <p class="empty">
+            🔍 Please search a construct to view questions (e.g. Numbers, Algebra)
+        </p>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Account - Competency System</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    /* SAME BACKGROUND AS LOGIN */
+    body {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    }
+
+    /* GLASS CARD */
+    .box {
+        width: 380px;
+        padding: 40px;
+
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+
+        border-radius: 18px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        text-align: center;
+    }
+
+    h2 {
+        font-size: 28px;
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    p {
+        margin-top: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    /* LABELS */
+    label {
+        display: block;
+        text-align: left;
+        margin-top: 10px;
+        font-weight: 600;
+        font-size: 13px;
+        color: #334155;
+    }
+
+    /* INPUTS */
+    input, select {
+        width: 100%;
+        padding: 13px;
+        margin-top: 6px;
+
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+
+        background: #f8fafc;
+        font-size: 14px;
+
+        transition: 0.2s;
+    }
+
+    input:focus, select:focus {
+        border-color: #06b6d4;
+        box-shadow: 0 0 0 3px rgba(6,182,212,0.2);
+        outline: none;
+        background: white;
+    }
+
+    /* BUTTON */
+    button {
+        width: 100%;
+        padding: 13px;
+        margin-top: 18px;
+
+        border: none;
+        border-radius: 10px;
+
+        background: #06b6d4;
+        color: white;
+
+        font-size: 15px;
+        font-weight: 700;
+
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #0891b2;
+    }
+
+    /* BOTTOM TEXT */
+    .bottom {
+        margin-top: 18px;
+        font-size: 13px;
+        color: #475569;
+    }
+
+    .bottom a {
+        color: #06b6d4;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .bottom a:hover {
+        text-decoration: underline;
+    }
+
+    /* MESSAGES */
+    .success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .error {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <h2>Create Account</h2>
+    <p>Join the Competency Assessment System</p>
+
+    {% if success %}
+        <div class="success"> {{ success }}</div>
+    {% endif %}
+
+    {% if error %}
+        <div class="error"> {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/register">
+
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Enter username" required>
+
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter password" required>
+
+        <label>Role</label>
+        <select name="role" required>
+            <option value="">Select role</option>
+            <option value="teacher">Teacher</option>
+            <option value="student">Student</option>
+        </select>
+
+        <button type="submit">Create Account</button>
+
+    </form>
+
+    <div class="bottom">
+        Already have an account?
+        <a href="/login">Login</a>
+    </div>
+
+</div>
+
+</body>
+</html>

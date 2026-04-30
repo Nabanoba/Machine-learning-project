@@ -10,20 +10,14 @@ from assignment_engine import auto_assign_questions
 
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
-from flask_migrate import Migrate
 from models import Result
-
+from extensions import db, migrate
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 import os
 
-db = SQLAlchemy()
-migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)

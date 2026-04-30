@@ -1,4 +1,4 @@
-from app import db   # ONLY if app.py exists at root
+from extensions import db   # ONLY if app.py exists at root
 
 class Result(db.Model):
     id = db.Column(db.Integer, primary_key=True)

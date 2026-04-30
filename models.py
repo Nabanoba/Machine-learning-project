@@ -8,7 +8,6 @@ class Result(db.Model):
     correct_answer = db.Column(db.Text)
     score = db.Column(db.Float)
     competency = db.Column(db.String(20))
-    feedback = db.Column(db.Text)
     construct = db.Column(db.String(100))
     bloom = db.Column(db.Float)
     dok = db.Column(db.Float)
@@ -16,3 +15,5 @@ class Result(db.Model):
     avg_sentence_length = db.Column(db.Float)
     feature_vector = db.Column(db.Text)
     cluster = db.Column(db.String(50))
+    feedback_status = db.Column(db.String(20))
+feedback_explanation = db.Column(db.Text)

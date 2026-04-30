@@ -263,6 +263,7 @@ def evaluate():
         construct=construct,
         bloom=bloom,
         dok=dok,
+        feedback=json.dumps(feedback), 
         readability=readability,
         avg_sentence_length=avg_sentence_length,
         feature_vector=json.dumps(feature_vector),

@@ -24,7 +24,20 @@ app.secret_key = "AI_COMPETENCY_SYSTEM_2026"
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy(app)
+db = SQLAlchemy(app) 
+
+database_url = os.getenv("DATABASE_URL")
+
+if not database_url:
+    raise Exception("DATABASE_URL missing")
+
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
+with app.app_context():
+    db.create_all()
 
 # ================= MODEL =================
 class Result(db.Model):

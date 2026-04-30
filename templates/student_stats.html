@@ -10,7 +10,7 @@
         }
 
         .container {
-            width: 80%;
+            width: 90%;
             margin: auto;
             padding: 20px;
         }
@@ -36,7 +36,6 @@
             text-align: center;
         }
 
-        /* BACK BUTTON */
         .top-bar {
             display: flex;
             justify-content: flex-start;
@@ -49,7 +48,6 @@
             color: white;
             text-decoration: none;
             border-radius: 6px;
-            font-size: 14px;
         }
 
         .btn:hover {
@@ -62,7 +60,6 @@
 
 <div class="container">
 
-    <!-- BACK BUTTON -->
     <div class="top-bar">
         <a href="javascript:history.back()" class="btn">⬅ Back</a>
     </div>
@@ -72,10 +69,9 @@
     <table>
         <tr>
             <th>Student</th>
-            <th>Average Score</th>
-            <th>Max Score</th>
-            <th>Min Score</th>
             <th>Attempts</th>
+            <th>Avg Readability</th>
+            <th>Avg Sentence Length</th>
             <th>High</th>
             <th>Medium</th>
             <th>Low</th>
@@ -83,14 +79,14 @@
 
         {% for s in stats %}
         <tr>
-            <td>{{ s.student }}</td>
-            <td>{{ "%.1f"|format(s.avg_score) }}</td>
-            <td>{{ s.max_score }}</td>
-            <td>{{ s.min_score }}</td>
-            <td>{{ s.attempts }}</td>
-            <td>{{ s.High if s.High is defined else 0 }}</td>
-            <td>{{ s.Medium if s.Medium is defined else 0 }}</td>
-            <td>{{ s.Low if s.Low is defined else 0 }}</td>
+            <td>{{ s["student"] }}</td>
+<td>{{ s["Attempts"] }}</td>
+
+<td>{{ "%.2f"|format(s["Avg_Readability"]) }}</td>
+<td>{{ "%.2f"|format(s["Avg_Sentence_Length"]) }}</td>
+<td>{{ s["High"] }}</td>
+<td>{{ s["Medium"] }}</td>
+<td>{{ s["Low"] }}</td>
         </tr>
         {% endfor %}
     </table>

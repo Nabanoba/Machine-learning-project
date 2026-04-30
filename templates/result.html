@@ -96,7 +96,6 @@
 
 <div class="container">
 
-    <!-- BACK BUTTON -->
     <div class="top-bar">
         <a href="javascript:history.back()" class="btn">⬅ Back</a>
     </div>
@@ -107,84 +106,59 @@
 
         {% for r in results %}
 
-        <!-- STUDENT -->
         <div class="card">
             <h2>Student</h2>
             <p class="highlight">{{ r.student }}</p>
         </div>
 
-        <!-- QUESTION -->
         <div class="card">
             <h2>Question</h2>
             <p>{{ r.question }}</p>
         </div>
 
-        <!-- STUDENT ANSWER -->
         <div class="card">
             <h2>Student Answer</h2>
             <p>{{ r.student_answer }}</p>
         </div>
 
-        <!-- CORRECT ANSWER -->
         <div class="card">
             <h2>Correct Answer</h2>
-            <p class="correct">{{ r.correct_answer or "Not available" }}</p>
+            <p class="correct">
+                {{ r.correct_answer | tojson if r.correct_answer is mapping else r.correct_answer }}
+            </p>
         </div>
 
-        <!-- FEEDBACK -->
-    
-<div class="card">
-    <h2>Feedback</h2>
+        <!-- FEEDBACK FIXED -->
+        <div class="card">
+            <h2>Feedback</h2>
 
-    {% if r.feedback %}
+            {% if r.feedback is mapping %}
 
-        {% set fb = r.feedback %}
+                <p>
+                    <b>Status:</b>
+                    {{ r.feedback.status }}
+                </p>
 
-        {% if fb is mapping %}
+                <p>
+                    <b>Explanation:</b>
+                    {{ r.feedback.explanation }}
+                </p>
 
-            <p>
-                <b>Status:</b>
+            {% else %}
+                <p>{{ r.feedback }}</p>
+            {% endif %}
+        </div>
 
-                {% if "Correct" in fb.status %}
-                    <span style="color:green;">{{ fb.status }}</span>
-
-                {% elif "Partially" in fb.status %}
-                    <span style="color:orange;">{{ fb.status }}</span>
-
-                {% else %}
-                    <span style="color:red;">{{ fb.status }}</span>
-                {% endif %}
-            </p>
-
-            <p>
-                <b>Explanation:</b> {{ fb.explanation }}
-            </p>
-
-        {% else %}
-
-            <!-- fallback if feedback is string -->
-            <p>{{ fb }}</p>
-
-        {% endif %}
-
-    {% else %}
-        <p>Not available</p>
-    {% endif %}
-</div>
-
-        <!-- SCORE + CLUSTER -->
         <div class="card">
             <h2>Evaluation Summary</h2>
 
             <div class="score-box">
 
-                <!-- SCORE -->
                 <div class="score-item">
                     <p class="highlight">Score</p>
                     <p>{{ r.score }}%</p>
                 </div>
 
-                <!-- COMPETENCY -->
                 <div class="score-item 
                     {% if r.competency == 'Low' %}low
                     {% elif r.competency == 'Medium' %}medium
@@ -194,7 +168,6 @@
                     <p>{{ r.competency }}</p>
                 </div>
 
-                <!-- CLUSTER -->
                 <div class="score-item">
                     <p class="highlight">AI Cluster (Performance Group)</p>
                     <p>{{ r.cluster }}</p>

@@ -15,5 +15,4 @@ class Result(db.Model):
     avg_sentence_length = db.Column(db.Float)
     feature_vector = db.Column(db.Text)
     cluster = db.Column(db.String(50))
-    feedback_status = db.Column(db.String(20))
-feedback_explanation = db.Column(db.Text)
+    feedback = db.Column(db.Text)

@@ -1,8 +1,8 @@
-"""create tables
+"""initial schema
 
-Revision ID: c8555b3c6cae
+Revision ID: ff8a6d291b58
 Revises: 
-Create Date: 2026-04-30 23:38:59.966658
+Create Date: 2026-05-01 01:25:05.782165
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c8555b3c6cae'
+revision = 'ff8a6d291b58'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -26,7 +26,6 @@ def upgrade():
     sa.Column('correct_answer', sa.Text(), nullable=True),
     sa.Column('score', sa.Float(), nullable=True),
     sa.Column('competency', sa.String(length=20), nullable=True),
-    sa.Column('feedback', sa.Text(), nullable=True),
     sa.Column('construct', sa.String(length=100), nullable=True),
     sa.Column('bloom', sa.Float(), nullable=True),
     sa.Column('dok', sa.Float(), nullable=True),
@@ -34,6 +33,7 @@ def upgrade():
     sa.Column('avg_sentence_length', sa.Float(), nullable=True),
     sa.Column('feature_vector', sa.Text(), nullable=True),
     sa.Column('cluster', sa.String(length=50), nullable=True),
+    sa.Column('feedback', sa.Text(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

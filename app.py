@@ -11,24 +11,26 @@ from assignment_engine import auto_assign_questions
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
 from flask_migrate import Migrate
+from models import Result
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-app = Flask(__name__)
-app.secret_key = "AI_COMPETENCY_SYSTEM_2026"
 
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+import os
 
 db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
+    app.secret_key = "AI_COMPETENCY_SYSTEM_2026"
 
     db_url = os.getenv("DATABASE_URL")
 
-    # Render fix
     if db_url and db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://")
 
@@ -41,22 +43,6 @@ def create_app():
     return app
 
 app = create_app()
-class Result(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    student = db.Column(db.String(100))
-    question = db.Column(db.Text)
-    student_answer = db.Column(db.Text)
-    correct_answer = db.Column(db.Text)
-    score = db.Column(db.Float)
-    competency = db.Column(db.String(20))
-    feedback = db.Column(db.Text)
-    construct = db.Column(db.String(100))
-    bloom = db.Column(db.Float)
-    dok = db.Column(db.Float)
-    readability = db.Column(db.Float)
-    avg_sentence_length = db.Column(db.Float)
-    feature_vector = db.Column(db.Text)
-    cluster = db.Column(db.String(50))
 
 # HOME
 @app.route('/')
@@ -636,7 +622,12 @@ def cluster_visualization():
     plt.savefig(image_path)
     plt.close()
 
-    return render_template("cluster_view.html", image_path="static/cluster_plot.png")
+    return render_template("cluster_view.html", image_path="static/cluster_plot.png") 
+import traceback
+
+@app.errorhandler(500)
+def error(e):
+    return "<pre>" + traceback.format_exc() + "</pre>"
 
 
 # RUN APP

@@ -433,22 +433,38 @@ def teacher_results():
 
 
 @app.route('/assign/<item_id>')
+@app.route('/assign/<item_id>')
 def assign_question(item_id):
 
     if session.get("role") != "teacher":
         return redirect(url_for("login"))
 
+    import os
+    import pandas as pd
+
     student = request.args.get("student")
 
-    
-    # UPDATE IN POSTGRESQL
+    if not student:
+        return "No student selected"
 
-    results = Result.query.filter_by(question_id=item_id).all()
+    # Load dataset safely
+    file_path = os.path.join(os.path.dirname(__file__), "ALL_with_features.xlsx")
 
-    for r in results:
-        r.assigned_to = student.lower()
+    if not os.path.exists(file_path):
+        return "Dataset file not found"
 
-    db.session.commit()
+    df = pd.read_excel(file_path)
+    df.columns = df.columns.str.strip().str.lower()
+
+    # Ensure column exists
+    if "assigned_to" not in df.columns:
+        df["assigned_to"] = ""
+
+    # Assign student
+    df.loc[df["item_id"].astype(str) == str(item_id), "assigned_to"] = student.lower()
+
+    # Save back
+    df.to_excel(file_path, index=False)
 
     return redirect(url_for('teacher_dashboard'))
 
@@ -486,52 +502,35 @@ def student_dashboard_stats():
     if session.get("role") != "teacher":
         return redirect(url_for("login"))
 
-    import numpy as np
     import pandas as pd
 
-    # LOAD FROM DATABASE
     results = Result.query.all()
 
     if not results:
         return render_template("student_stats.html", stats=[])
 
-    
-    # CONVERT TO DICT
     data = []
 
     for r in results:
         data.append({
-            "student": r.student,
-            "readability": r.readability or 0,
-            "avg_sentence_length": r.avg_sentence_length or 0,
-            "competency": r.competency or "Low",
-            "score": r.score or 0
+            "student": str(r.student or "unknown"),
+            "readability": float(r.readability or 0),
+            "avg_sentence_length": float(r.avg_sentence_length or 0),
+            "competency": str(r.competency or "Low"),
+            "score": float(r.score or 0)
         })
 
     df = pd.DataFrame(data)
 
-    
-    # SAFE COLUMNS
+    if df.empty:
+        return render_template("student_stats.html", stats=[])
 
-    required = [
-        "student",
-        "readability",
-        "avg_sentence_length",
-        "competency"
-    ]
-
-    for col in required:
-        if col not in df.columns:
-            df[col] = 0
-
-    
-    # CLEAN NUMBERS
-
+    # CLEAN
     df["readability"] = pd.to_numeric(df["readability"], errors="coerce").fillna(0)
     df["avg_sentence_length"] = pd.to_numeric(df["avg_sentence_length"], errors="coerce").fillna(0)
     df["score"] = pd.to_numeric(df["score"], errors="coerce").fillna(0)
 
-    # GROUP ANALYSIS
+    # GROUP
     summary = df.groupby("student").agg(
         Attempts=("student", "count"),
         Avg_Readability=("readability", "mean"),
@@ -576,34 +575,28 @@ def cluster_visualization():
     if session.get("role") != "teacher":
         return redirect(url_for("login"))
 
+    import os
     import numpy as np
     import matplotlib.pyplot as plt
 
-    
-    # LOAD FROM POSTGRESQL
     results = Result.query.all()
 
     if len(results) < 2:
         return "Not enough data for visualization"
 
-    # BUILD FEATURE MATRIX
     X = np.array([
         [
-            r.score or 0,
-            len(str(r.student_answer).split()) if r.student_answer else 0,
-            r.readability or 0
+            float(r.score or 0),
+            len(str(r.student_answer or "").split()),
+            float(r.readability or 0)
         ]
         for r in results
     ])
 
-
-    # STANDARDIZE
     from sklearn.preprocessing import StandardScaler
     X = StandardScaler().fit_transform(X)
 
-    # CLUSTERING
     from sklearn.cluster import AgglomerativeClustering
-
     model = AgglomerativeClustering(
         n_clusters=min(3, len(results)),
         linkage="ward"
@@ -611,27 +604,26 @@ def cluster_visualization():
 
     labels = model.fit_predict(X)
 
-    # PCA (2D VISUALIZATION)
-    
     from sklearn.decomposition import PCA
+    X_2d = PCA(n_components=2).fit_transform(X)
 
-    pca = PCA(n_components=2)
-    X_2d = pca.fit_transform(X)
+    #  ensure static folder exists
+    static_path = os.path.join(os.path.dirname(__file__), "static")
+    os.makedirs(static_path, exist_ok=True)
 
-    # PLOT
+    image_path = os.path.join(static_path, "cluster_plot.png")
+
     plt.figure()
     plt.scatter(X_2d[:, 0], X_2d[:, 1], c=labels)
-
     plt.title("Student Performance Clusters")
-    plt.xlabel("Component 1")
-    plt.ylabel("Component 2")
 
-    path = "static/cluster_plot.png"
-    plt.savefig(path)
+    plt.savefig(image_path)
     plt.close()
 
-    return render_template("cluster_view.html", image_path=path)
+    return render_template("cluster_view.html", image_path="static/cluster_plot.png")
 
 # RUN APP
 if __name__ == '__main__':
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)

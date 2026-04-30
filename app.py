@@ -341,59 +341,66 @@ def teacher_results():
     if session.get("role") != "teacher":
         return redirect(url_for("login"))
 
-    # LOAD FROM POSTGRESQL
-    
+    import json
+    import numpy as np
+
     results_query = Result.query.all()
 
     results_store = []
 
     for r in results_query:
+        # ✅ safely parse feedback
+        try:
+            feedback = json.loads(r.feedback) if r.feedback else {}
+        except:
+            feedback = {}
+
         results_store.append({
-            "student": r.student,
-            "question": r.question,
-            "student_answer": r.student_answer,
-            "score": r.score,
-            "dok": r.dok,
-            "readability": r.readability,
-            "avg_sentence_length": r.avg_sentence_length,
+            "student": str(r.student or ""),
+            "question": str(r.question or ""),
+            "student_answer": str(r.student_answer or ""),
+            "correct_answer": str(r.correct_answer or ""),  # ✅ FIXED
+            "score": float(r.score or 0),
+            "competency": str(r.competency or "Low"),       # ✅ FIXED
+            "feedback": feedback,                           # ✅ FIXED
+            "dok": float(r.dok or 0),
+            "readability": float(r.readability or 0),
+            "avg_sentence_length": float(r.avg_sentence_length or 0),
             "cluster": r.cluster or "Not assigned"
         })
 
     n = len(results_store)
 
-    # NO DATA CASE
     if n == 0:
         return render_template("result.html", results=[])
 
-    
-    # DEFAULT CLUSTER
-
+    # DEFAULT
     for r in results_store:
         r["cluster"] = "Low Performer"
-
-    
-    # CLUSTERING
 
     if n >= 2:
 
         X = np.array([
             [
-                r.get("score", 0),
-                len(str(r.get("student_answer", "")).split()),
-                len(str(r.get("question", "")).split()),
-                r.get("dok", 0) if isinstance(r.get("dok", 0), (int, float)) else 0
+                float(r.get("score") or 0),
+                len(str(r.get("student_answer") or "").split()),
+                len(str(r.get("question") or "").split()),
+                float(r.get("dok") or 0)
             ]
             for r in results_store
         ])
 
+        from sklearn.preprocessing import StandardScaler
         X = StandardScaler().fit_transform(X)
 
-        n_clusters = min(3, n)
+        from sklearn.cluster import AgglomerativeClustering
+        model = AgglomerativeClustering(
+            n_clusters=min(3, n),
+            linkage="ward"
+        )
 
-        model = AgglomerativeClustering(n_clusters=n_clusters, linkage="ward")
         labels = model.fit_predict(X)
 
-        # attach labels
         for i, r in enumerate(results_store):
             r["cluster_raw"] = int(labels[i])
 
@@ -401,7 +408,8 @@ def teacher_results():
 
         for c in set(labels):
             cluster_avg[c] = np.mean([
-                r["score"] for r in results_store
+                float(r["score"] or 0)
+                for r in results_store
                 if r["cluster_raw"] == c
             ])
 
@@ -418,7 +426,6 @@ def teacher_results():
             r["cluster"] = cluster_map.get(r["cluster_raw"], "Low Performer")
             del r["cluster_raw"]
 
-            # OPTIONAL: SAVE BACK TO DB
             db_result = Result.query.filter_by(
                 student=r["student"],
                 question=r["question"]
@@ -431,8 +438,6 @@ def teacher_results():
 
     return render_template("result.html", results=results_store)
 
-
-@app.route('/assign/<item_id>')
 @app.route('/assign/<item_id>')
 def assign_question(item_id):
 

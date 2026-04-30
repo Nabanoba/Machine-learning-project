@@ -4,7 +4,6 @@ import re
 import numpy as np
 import os
 import json
-import json
 from model_engine import evaluate_answer
 from database import register_user, login_user, get_all_students
 from assignment_engine import auto_assign_questions
@@ -14,12 +13,10 @@ from sklearn.preprocessing import StandardScaler
 
 import matplotlib
 matplotlib.use('Agg')
-
-import numpy as np
-from flask import Flask, render_template, request, redirect, url_for, session
+import matplotlib.pyplot as plt
 app = Flask(__name__)
 app.secret_key = "AI_COMPETENCY_SYSTEM_2026"
-import os
+
 from flask_sqlalchemy import SQLAlchemy
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
@@ -102,10 +99,7 @@ def evaluate():
     if session.get("role") != "student":
         return redirect(url_for("login"))
 
-    import json
-    import numpy as np
-    import pandas as pd
-    import re
+    
 
     # GET FORM DATA
     
@@ -268,7 +262,6 @@ def evaluate():
         correct_answer=correct_answer,
         score=score,
         competency=competency,
-        feedback=json.dumps(feedback),
         construct=construct,
         bloom=bloom,
         dok=dok,
@@ -341,15 +334,18 @@ def teacher_results():
     if session.get("role") != "teacher":
         return redirect(url_for("login"))
 
-    import json
-    import numpy as np
-
-    results_query = Result.query.all()
+    
+    try:
+        results = Result.query.all()
+    except Exception as e:
+        return f"Database error: {str(e)}"
 
     results_store = []
 
-    for r in results_query:
-        # ✅ safely parse feedback
+    #  use "results" not "results_query"
+    for r in results:
+
+        # safely parse feedback
         try:
             feedback = json.loads(r.feedback) if r.feedback else {}
         except:
@@ -359,10 +355,10 @@ def teacher_results():
             "student": str(r.student or ""),
             "question": str(r.question or ""),
             "student_answer": str(r.student_answer or ""),
-            "correct_answer": str(r.correct_answer or ""),  # ✅ FIXED
+            "correct_answer": str(r.correct_answer or ""),
             "score": float(r.score or 0),
-            "competency": str(r.competency or "Low"),       # ✅ FIXED
-            "feedback": feedback,                           # ✅ FIXED
+            "competency": str(r.competency or "Low"),
+            "feedback": feedback,
             "dok": float(r.dok or 0),
             "readability": float(r.readability or 0),
             "avg_sentence_length": float(r.avg_sentence_length or 0),
@@ -374,7 +370,7 @@ def teacher_results():
     if n == 0:
         return render_template("result.html", results=[])
 
-    # DEFAULT
+    # DEFAULT CLUSTER
     for r in results_store:
         r["cluster"] = "Low Performer"
 
@@ -437,6 +433,7 @@ def teacher_results():
         db.session.commit()
 
     return render_template("result.html", results=results_store)
+
 
 @app.route('/assign/<item_id>')
 def assign_question(item_id):
@@ -574,16 +571,12 @@ def forgot_password():
 
 
 @app.route('/teacher/cluster-visualization')
-@app.route('/teacher/cluster-visualization')
 def cluster_visualization():
 
     if session.get("role") != "teacher":
         return redirect(url_for("login"))
 
-    import os
-    import numpy as np
-    import matplotlib.pyplot as plt
-
+    
     results = Result.query.all()
 
     if len(results) < 2:

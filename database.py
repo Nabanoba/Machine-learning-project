@@ -1,91 +1,45 @@
-import sqlite3
-
-# =========================
-# CONNECTION + AUTO TABLE INIT
-# =========================
-def get_connection():
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-
-    # create table once safely
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT,
-            role TEXT
-        )
-    """)
-
-    conn.commit()
-    return conn
+from models import User
+from extensions import db
 
 
-# =========================
 # REGISTER USER
-# =========================
 def register_user(username, password, role):
-    conn = get_connection()
-    cursor = conn.cursor()
+    username = username.strip().lower()
+    role = role.strip().lower()
 
-    try:
-        username = username.strip().lower()
-        role = role.strip().lower()
-
-        # check if user exists
-        cursor.execute(
-            "SELECT id FROM users WHERE username=?",
-            (username,)
-        )
-
-        if cursor.fetchone():
-            return False
-
-        # insert user
-        cursor.execute(
-            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-            (username, password, role)
-        )
-
-        conn.commit()
-        return True
-
-    except Exception as e:
-        print("REGISTER ERROR:", e)
+    existing = User.query.filter_by(username=username).first()
+    if existing:
         return False
 
-    finally:
-        conn.close()
-
-
-# =========================
-# LOGIN USER
-# =========================
-def login_user(username, password):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    username = username.strip().lower()
-
-    cursor.execute(
-        "SELECT * FROM users WHERE username=? AND password=?",
-        (username, password)
+    user = User(
+        username=username,
+        password=password,
+        role=role
     )
 
-    user = cursor.fetchone()
-    conn.close()
-    return user
+    db.session.add(user)
+    db.session.commit()
+    return True
 
 
-# =========================
+# LOGIN USER
+
+def login_user(username, password):
+    username = username.strip().lower()
+
+    user = User.query.filter_by(
+        username=username,
+        password=password
+    ).first()
+
+    if user:
+        return (user.id, user.username, user.password, user.role)
+
+    return None
+
+
+
 # GET ALL STUDENTS
-# =========================
 def get_all_students():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT username FROM users WHERE role='student'")
-    students = [{"username": row[0]} for row in cursor.fetchall()]
-
-    conn.close()
-    return students
+    students = User.query.filter_by(role="student").all()
+    return [{"username": s.username} for s in students]

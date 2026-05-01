@@ -1,6 +1,7 @@
 from extensions import db   # ONLY if app.py exists at root
 
 class Result(db.Model):
+    __tablename__ = "result"
     id = db.Column(db.Integer, primary_key=True)
     student = db.Column(db.String(100))
     question = db.Column(db.Text)
@@ -16,3 +17,10 @@ class Result(db.Model):
     feature_vector = db.Column(db.Text)
     cluster = db.Column(db.String(50))
     feedback = db.Column(db.Text)
+
+class User(db.Model):
+    __tablename__ = "user"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(100))
+    role = db.Column(db.String(20))   
